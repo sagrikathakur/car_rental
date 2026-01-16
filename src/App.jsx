@@ -24,6 +24,7 @@ const App = () => {
 
   return (
     <>
+
       {showLogin && <Login setShowLogin={setShowLogin} />}
       {!isOwnerPath && <Navbar setShowLogin={setShowLogin} />}
 
