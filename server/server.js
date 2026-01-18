@@ -1,0 +1,21 @@
+import express from "express";
+import "dotenv/config";
+import cors from "cors";
+import connectDB from "./config/db.js";
+import userRouter from "./routes/userRoutes.js";
+
+// initialize app//
+const app = express();
+// connect to database
+await connectDB()
+
+// middleware//
+
+app.use(cors());
+app.use(express.json());
+
+app.get("/", (req, res) => res.send("server is running"));
+app.use("/api/user", userRouter)
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
