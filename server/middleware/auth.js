@@ -11,7 +11,7 @@ const protect = async (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET)
 
-    if (!decoded) {
+    if (!decoded || !decoded.userId) {
       return res.json({ success: false, message: "unauthorized" })
     }
 
