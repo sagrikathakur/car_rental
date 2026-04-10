@@ -1,22 +1,23 @@
-import mongoose from "mongoose";
+import { pool } from '../config/db.js';
 
-const carSchema = new mongoose.Schema({
-  owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  brand: { type: String, required: true },
-  model: { type: String, required: true },
-  year: { type: Number, required: true },
-  color: { type: String, required: true },
-  price: { type: Number, required: true },
-  image: { type: String, required: true },
-  category: { type: String, required: true },
-  fuelType: { type: String, required: true },
-  transmission: { type: String, required: true },
-  seats: { type: Number, required: true },
-  description: { type: String, required: true },
-  pricePerDay: { type: Number, required: true },
-  isAvailable: { type: Boolean, default: true }
-}, { timestamps: true })
+export const create = async (carData) => {
+  const { owner_id, brand, model, year, color, price, image, category, fuel_type, transmission, seats, description, price_per_day } = carData;
+  const result = await pool.query(
+    `INSERT INTO cars 
+    (owner_id, brand, model, year, color, price, image, category, fuel_type, transmission, seats, description, price_per_day) 
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) 
+    RETURNING *`,
+    [owner_id, brand, model, year, color, price, image, category, fuel_type, transmission, seats, description, price_per_day]
+  );
+  return result.rows[0];
+};
 
-const Car = mongoose.model('Car', carSchema)
+export const findByOwner = async (owner_id) => {
+  const result = await pool.query('SELECT * FROM cars WHERE owner_id = $1', [owner_id]);
+  return result.rows;
+};
 
-export default Car
+export const findAll = async () => {
+  const result = await pool.query('SELECT * FROM cars ORDER BY created_at DESC');
+  return result.rows;
+};

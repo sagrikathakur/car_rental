@@ -1,4 +1,4 @@
-import User from "../models/user.js";
+import * as User from "../models/user.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken"
 
@@ -15,15 +15,16 @@ export const registerUser = async (req, res) => {
     if (!name || !email || !password || password.length < 8) {
       return res.json({ success: false, message: "all fields are required" })
     }
-    const userExits = await User.findOne({ email })
-    if (userExits) {
+
+    const userExists = await User.findByEmail(email);
+    if (userExists) {
       return res.json({ success: false, message: "user already exists" })
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10)
-    const user = await User.create({ name, email, password: hashedPassword, role, image })
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = await User.create({ name, email, password: hashedPassword, role, image });
 
-    const token = generateToken(user._id.toString())
+    const token = generateToken(user.id);
     res.json({ success: true, message: "user created successfully", token })
 
   } catch (error) {
@@ -37,7 +38,8 @@ export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email })
+    const user = await User.findByEmail(email);
+
     if (!user) {
       return res.json({ success: false, message: "user not found" })
     }
@@ -45,21 +47,21 @@ export const loginUser = async (req, res) => {
     if (!isMatch) {
       return res.json({ success: false, message: "invalid password" })
     }
-    const token = generateToken(user._id.toString())
+    const token = generateToken(user.id)
     res.json({ success: true, message: "user logged in successfully", token })
   } catch (error) {
     console.log(error.message)
     res.json({ success: false, message: error.message })
   }
 }
-// jwt token//
 
 export const getUserData = async (req, res) => {
   try {
-    const { user } = req;
+    const { user } = req; 
     res.json({ success: true, user })
   } catch (error) {
     console.log(error.message)
     res.json({ success: false, message: error.message })
   }
 }
+

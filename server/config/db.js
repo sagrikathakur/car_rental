@@ -1,14 +1,20 @@
-import mongoose from "mongoose";
+import { neonConfig, Pool } from '@neondatabase/serverless';
+import ws from 'ws';
+
+neonConfig.webSocketConstructor = ws;
+
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+
 
 const connectDB = async () => {
   try {
-    mongoose.connection.on('connected', () => console.log("Database connected successfully"))
-    mongoose.connection.on('error', (err) => console.log("Database connection error:", err))
-
-    await mongoose.connect(`${process.env.MONGODB_URI}/carRent_app`)
+    const client = await pool.connect();
+    console.log("Neon Postgres connected successfully");
+    client.release();
   } catch (error) {
-    console.log("Database connection failed:", error.message)
+    console.log("Neon Postgres connection failed:", error.message);
   }
-}
+};
 
-export default connectDB;
+export { pool };
+export default connectDB;

@@ -1,16 +1,12 @@
-import User from "../models/user.js";
-import Car from "../models/car.js";
+import * as User from "../models/user.js";
+import * as Car from "../models/car.js";
 
 // Change user role to owner
 export const changeRoleToOwner = async (req, res) => {
   try {
-    const { _id } = req.user;
+    const { id } = req.user; 
 
-    const user = await User.findByIdAndUpdate(
-      _id,
-      { role: "owner" },
-      { new: true }
-    ).select('-password');
+    const user = await User.updateRole(id, "owner");
 
     if (!user) {
       return res.json({ success: false, message: "User not found" });
@@ -26,9 +22,9 @@ export const changeRoleToOwner = async (req, res) => {
 // Get owner profile
 export const getOwnerProfile = async (req, res) => {
   try {
-    const { _id } = req.user;
+    const { id } = req.user;
 
-    const user = await User.findById(_id).select('-password');
+    const user = await User.findById(id);
 
     if (!user || user.role !== "owner") {
       return res.json({ success: false, message: "Owner not found" });
@@ -44,14 +40,10 @@ export const getOwnerProfile = async (req, res) => {
 // Update owner profile
 export const updateOwnerProfile = async (req, res) => {
   try {
-    const { _id } = req.user;
+    const { id } = req.user;
     const { name, image } = req.body;
 
-    const user = await User.findByIdAndUpdate(
-      _id,
-      { name, image },
-      { new: true }
-    ).select('-password');
+    const user = await User.updateProfile(id, { name, image });
 
     if (!user) {
       return res.json({ success: false, message: "User not found" });
@@ -67,7 +59,7 @@ export const updateOwnerProfile = async (req, res) => {
 // Add a new car
 export const addCar = async (req, res) => {
   try {
-    const { _id } = req.user;
+    const { id } = req.user;
     const { brand, model, year, color, price, image, category, fuelType, transmission, seats, description, pricePerDay } = req.body;
 
     // Validate required fields
@@ -76,7 +68,7 @@ export const addCar = async (req, res) => {
     }
 
     const car = await Car.create({
-      owner: _id,
+      owner_id: id,
       brand,
       model,
       year,
@@ -84,11 +76,11 @@ export const addCar = async (req, res) => {
       price,
       image,
       category,
-      fuelType,
+      fuel_type: fuelType,
       transmission,
       seats,
       description,
-      pricePerDay
+      price_per_day: pricePerDay
     });
 
     res.json({ success: true, message: "Car added successfully", car });
@@ -101,9 +93,9 @@ export const addCar = async (req, res) => {
 // List all cars owned by the owner
 export const listCars = async (req, res) => {
   try {
-    const { _id } = req.user;
+    const { id } = req.user;
 
-    const cars = await Car.find({ owner: _id });
+    const cars = await Car.findByOwner(id);
 
     res.json({ success: true, cars });
   } catch (error) {
@@ -111,3 +103,4 @@ export const listCars = async (req, res) => {
     res.json({ success: false, message: error.message });
   }
 };
+

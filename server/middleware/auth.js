@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import User from "../models/user.js";
+import { pool } from "../config/db.js";
 
 const protect = async (req, res, next) => {
   const token = req.headers.authorization;
@@ -15,7 +15,18 @@ const protect = async (req, res, next) => {
       return res.json({ success: false, message: "unauthorized" })
     }
 
-    req.user = await User.findById(decoded.userId).select('-password')
+    const result = await pool.query(
+      'SELECT id, name, email, role, image FROM users WHERE id = $1',
+      [decoded.userId]
+    );
+    
+    const user = result.rows[0];
+
+    if (!user) {
+      return res.json({ success: false, message: "unauthorized" });
+    }
+
+    req.user = user;
     next()
   } catch (error) {
     return res.json({ success: false, message: error.message })
@@ -23,3 +34,4 @@ const protect = async (req, res, next) => {
 }
 
 export default protect;
+
